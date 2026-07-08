@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -60,3 +60,68 @@ jobs:
           name: web-build
           path: game/build/web/
           retention-days: 7
+
+  build-backend-image:
+    runs-on: ubuntu-latest
+    needs: [lint, test-backend]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/new_rogue-backend:latest
+            ghcr.io/${{ github.repository_owner }}/new_rogue-backend:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-web, build-backend-image]
+    if: github.ref == 'refs/heads/main'
+    concurrency: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: web-build
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+      - name: Upload game static and infra files
+        run: |
+          rsync -az --delete web-build/ root@${{ secrets.DEPLOY_HOST }}:/var/www/rogue/
+          rsync -az infra/docker-compose.prod.yml root@${{ secrets.DEPLOY_HOST }}:/opt/rogue/docker-compose.yml
+          rsync -az infra/nginx/ root@${{ secrets.DEPLOY_HOST }}:/opt/rogue/nginx/
+      - name: Pull new backend image and restart stack
+        run: |
+          ssh root@${{ secrets.DEPLOY_HOST }} "
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
+            cd /opt/rogue &&
+            docker compose pull -q &&
+            docker compose up -d --remove-orphans &&
+            docker image prune -f
+          "
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            if curl -fsS "http://${{ secrets.DEPLOY_HOST }}/api/health" > /dev/null; then
+              echo "Health check passed"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check FAILED"
+          exit 1
