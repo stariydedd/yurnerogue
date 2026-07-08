@@ -1,0 +1,55 @@
+import asyncio
+
+import pygame
+from presentation import ui
+from presentation.config import FPS, SCREEN_H, SCREEN_W, WINDOW_TITLE
+from presentation.fonts import Fonts
+from presentation.view import MAIN_MENU_OPTIONS, QUIT_OPTIONS, Game
+
+
+async def main():
+    """Точка входа. Асинхронный цикл нужен уже сейчас, чтобы позже собрать игру
+    через pygbag в WASM без переписывания игрового цикла — pygbag требует asyncio.
+    """
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+    pygame.display.set_caption(WINDOW_TITLE)
+    clock = pygame.time.Clock()
+    fonts = Fonts()
+    game = Game()
+
+    while not game.should_quit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game.should_quit = True
+            else:
+                game.handle_event(event)
+
+        if game.state == "MAIN_MENU":
+            ui.draw_main_menu(screen, fonts, MAIN_MENU_OPTIONS, game.menu_selected, game.menu_message)
+        elif game.state == "NAME_ENTRY":
+            ui.draw_name_entry(screen, fonts, game.name_input)
+        elif game.state == "PLAYING":
+            ui.draw_playing(screen, fonts, game.session)
+        elif game.state == "ITEM_MENU":
+            ui.draw_playing(screen, fonts, game.session)
+            ui.draw_item_menu_overlay(screen, fonts, game.item_menu_items, game.item_menu_allow_zero)
+        elif game.state == "QUIT_DIALOG":
+            ui.draw_playing(screen, fonts, game.session)
+            ui.draw_quit_dialog(screen, fonts, QUIT_OPTIONS, game.quit_selected)
+        elif game.state == "LEADERBOARD":
+            ui.draw_leaderboard_screen(screen, fonts, game.leaderboard_records, game.leaderboard_source)
+        elif game.state == "DEATH":
+            ui.draw_end_screen(screen, fonts, "YOU DIED", game.submit_status)
+        elif game.state == "WIN":
+            ui.draw_end_screen(screen, fonts, "YOU WIN!", game.submit_status)
+
+        pygame.display.flip()
+        await asyncio.sleep(0)
+        clock.tick(FPS)
+
+    pygame.quit()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

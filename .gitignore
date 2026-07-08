@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+game/datalayer/save.json
+game/datalayer/leaderboard.json
+build/
+.pytest_cache/
+.ruff_cache/
+infra/.env
