@@ -243,15 +243,15 @@ def draw_item_menu_overlay(screen, fonts, items, allow_zero):
 def _draw_dialog_box(screen, fonts, title, options, selected):
     """Рисует затемнение и центральное диалоговое окно с опциями."""
     _dim_background(screen)
-    box_w, box_h = 420, 50 + len(options) * 36
+    box_w, box_h = 520, 60 + len(options) * 40
     box_x = (SCREEN_W - box_w) // 2
     box_y = (SCREEN_H - box_h) // 2
     pygame.draw.rect(screen, (25, 25, 25), (box_x, box_y, box_w, box_h))
-    pygame.draw.rect(screen, WHITE, (box_x, box_y, box_w, box_h), 2)
-    _center_text(screen, fonts.ui, title, box_y + 12, WHITE)
+    pygame.draw.rect(screen, GOLD, (box_x, box_y, box_w, box_h), 2)
+    _center_text(screen, fonts.ui, title, box_y + 16, WHITE)
     for i, (label, _) in enumerate(options):
         color = HILITE if i == selected else WHITE
-        _center_text(screen, fonts.ui, label, box_y + 46 + i * 36, color)
+        _center_text(screen, fonts.ui, label, box_y + 56 + i * 40, color)
 
 
 def draw_quit_dialog(screen, fonts, options, selected):
@@ -259,62 +259,98 @@ def draw_quit_dialog(screen, fonts, options, selected):
     _draw_dialog_box(screen, fonts, "Quit game?", options, selected)
 
 
-def draw_main_menu(screen, fonts, options, selected, message=""):
-    """Главное меню со списком опций и, опционально, транзитным сообщением снизу."""
-    screen.fill(BLACK)
-    _center_text(screen, fonts.title, "NEW ROGUE", SCREEN_H // 3, GOLD)
+def _menu_backdrop(screen, sprites):
+    """Фон меню: пол подземелья на весь экран, затемнённый."""
+    cols = SCREEN_W // TILE_SIZE + 1
+    rows = SCREEN_H // TILE_SIZE + 1
+    for y in range(rows):
+        for x in range(cols):
+            screen.blit(sprites.frame(_floor_variant(x, y)), (x * TILE_SIZE, y * TILE_SIZE))
+    overlay = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 190))
+    screen.blit(overlay, (0, 0))
+
+
+def _title_with_shadow(screen, fonts, text, y):
+    shadow = fonts.title.render(text, True, (60, 40, 0))
+    surf = fonts.title.render(text, True, GOLD)
+    rect = surf.get_rect(centerx=SCREEN_W // 2, y=y)
+    screen.blit(shadow, rect.move(4, 4))
+    screen.blit(surf, rect)
+
+
+def draw_main_menu(screen, fonts, sprites, options, selected, message=""):
+    """Главное меню: фон из тайлов, герой и выбор опций с маркером-мечом."""
+    _menu_backdrop(screen, sprites)
+    _title_with_shadow(screen, fonts, "NEW ROGUE", 130)
+
+    hero = pygame.transform.scale_by(sprites.frame(PLAYER_SPRITE, _anim_tick()), 3)
+    screen.blit(hero, hero.get_rect(centerx=SCREEN_W // 2, y=210))
+
+    menu_y = 360
+    marker = pygame.transform.scale_by(sprites.frame("weapon_regular_sword"), 1)
+    marker = pygame.transform.rotate(marker, -90)
     for i, (label, _) in enumerate(options):
         color = HILITE if i == selected else WHITE
-        _center_text(screen, fonts.ui, label, SCREEN_H // 3 + 70 + i * 40, color)
+        surf = fonts.menu.render(label, True, color)
+        rect = surf.get_rect(centerx=SCREEN_W // 2, y=menu_y + i * 52)
+        screen.blit(surf, rect)
+        if i == selected:
+            screen.blit(marker, marker.get_rect(midright=(rect.left - 18, rect.centery)))
+
     if message:
-        _center_text(screen, fonts.ui, message, SCREEN_H - 40, MSG_COLOR)
+        _center_text(screen, fonts.ui, message, SCREEN_H - 60, MSG_COLOR)
+    _center_text(screen, fonts.small, "WASD / arrows + Enter", SCREEN_H - 28, HINT_COLOR)
 
 
-def draw_leaderboard_screen(screen, fonts, records, source=""):
+def draw_leaderboard_screen(screen, fonts, sprites, records, source=""):
     """Экран таблицы рекордов. records=None — глобальный топ ещё грузится."""
-    screen.fill(BLACK)
-    _center_text(screen, fonts.title, "HIGH SCORES", 30, GOLD)
+    _menu_backdrop(screen, sprites)
+    _title_with_shadow(screen, fonts, "HIGH SCORES", 40)
     if source:
-        _center_text(screen, fonts.ui, source, 84, HINT_COLOR)
+        _center_text(screen, fonts.small, source, 110, HINT_COLOR)
     header = (
-        f"{'#':>3}  {'NAME':<16}  {'GOLD':>6}  {'LVL':>4}  {'KILLS':>5}  {'FOOD':>4}  "
-        f"{'ELIX':>4}  {'SCRL':>4}  {'ATK':>5}  {'HIT':>5}  {'MOVE':>6}"
+        f"{'#':>3} {'NAME':<16} {'GOLD':>6} {'LVL':>4} {'KILLS':>5} {'FOOD':>4} "
+        f"{'ELIX':>4} {'SCRL':>4} {'ATK':>5} {'HIT':>5} {'MOVE':>6}"
     )
     if records is None:
-        _center_text(screen, fonts.ui, "Loading global leaderboard...", 140, WHITE)
+        _center_text(screen, fonts.ui, "Loading global leaderboard...", 170, WHITE)
     elif not records:
-        _center_text(screen, fonts.ui, "No records yet.", 140, WHITE)
+        _center_text(screen, fonts.ui, "No records yet.", 170, WHITE)
     else:
-        _center_text(screen, fonts.ui, header, 110, (170, 170, 170))
+        _center_text(screen, fonts.small, header, 150, (170, 170, 170))
         for i, r in enumerate(records):
             name = str(r.get("player_name", "-"))[:16]
             line = (
-                f"{i + 1:>3}  {name:<16}  {r['treasures']:>6}  {r['level']:>4}  {r['enemies_killed']:>5}  "
-                f"{r['food_used']:>4}  {r['elixirs_used']:>4}  {r['scrolls_read']:>4}  "
-                f"{r['attacks_made']:>5}  {r['hits_taken']:>5}  {r['tiles_moved']:>6}"
+                f"{i + 1:>3} {name:<16} {r['treasures']:>6} {r['level']:>4} {r['enemies_killed']:>5} "
+                f"{r['food_used']:>4} {r['elixirs_used']:>4} {r['scrolls_read']:>4} "
+                f"{r['attacks_made']:>5} {r['hits_taken']:>5} {r['tiles_moved']:>6}"
             )
-            _center_text(screen, fonts.ui, line, 140 + i * 26, WHITE)
-    _center_text(screen, fonts.ui, "Press any key to return...", SCREEN_H - 40, HINT_COLOR)
+            color = HILITE if i == 0 else WHITE
+            _center_text(screen, fonts.small, line, 180 + i * 28, color)
+    _center_text(screen, fonts.small, "Press any key to return...", SCREEN_H - 32, HINT_COLOR)
 
 
-def draw_name_entry(screen, fonts, name_input):
+def draw_name_entry(screen, fonts, sprites, name_input):
     """Экран ввода имени игрока перед новой игрой."""
-    screen.fill(BLACK)
-    _center_text(screen, fonts.title, "ENTER YOUR NAME", SCREEN_H // 3, GOLD)
-    box_w, box_h = 420, 44
+    _menu_backdrop(screen, sprites)
+    _title_with_shadow(screen, fonts, "YOUR NAME", 170)
+    hero = pygame.transform.scale_by(sprites.frame(PLAYER_SPRITE, _anim_tick()), 3)
+    screen.blit(hero, hero.get_rect(centerx=SCREEN_W // 2, y=260))
+    box_w, box_h = 460, 48
     box_x = (SCREEN_W - box_w) // 2
-    box_y = SCREEN_H // 3 + 80
+    box_y = 420
     pygame.draw.rect(screen, (25, 25, 25), (box_x, box_y, box_w, box_h))
-    pygame.draw.rect(screen, WHITE, (box_x, box_y, box_w, box_h), 2)
-    _blit(screen, fonts.ui, name_input + "_", (box_x + 12, box_y + 10), WHITE)
-    _center_text(screen, fonts.ui, "Enter: start  Esc: back  (empty = anonymous)",
-                 box_y + box_h + 24, HINT_COLOR)
+    pygame.draw.rect(screen, GOLD, (box_x, box_y, box_w, box_h), 2)
+    _blit(screen, fonts.menu, name_input + "_", (box_x + 14, box_y + 14), WHITE)
+    _center_text(screen, fonts.small, "Enter: start   Esc: back   (empty = anonymous)",
+                 box_y + box_h + 26, HINT_COLOR)
 
 
-def draw_end_screen(screen, fonts, message, submit_status=""):
+def draw_end_screen(screen, fonts, sprites, message, submit_status=""):
     """Экран смерти или победы со статусом отправки результата на сервер."""
-    screen.fill(BLACK)
-    _center_text(screen, fonts.title, message, SCREEN_H // 2 - 40, GOLD)
+    _menu_backdrop(screen, sprites)
+    _title_with_shadow(screen, fonts, message, SCREEN_H // 2 - 80)
     if submit_status:
         _center_text(screen, fonts.ui, submit_status, SCREEN_H // 2 + 20, MSG_COLOR)
-    _center_text(screen, fonts.ui, "Press Enter to exit.", SCREEN_H // 2 + 56, HINT_COLOR)
+    _center_text(screen, fonts.small, "Press Enter to exit.", SCREEN_H // 2 + 60, HINT_COLOR)

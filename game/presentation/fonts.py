@@ -1,10 +1,17 @@
+from pathlib import Path
+
 import pygame
+
+FONT_PATH = Path(__file__).parent.parent / "assets" / "fonts" / "PressStart2P.ttf"
 
 
 class Fonts:
-    """Держит все шрифты игры, создаётся один раз после pygame.font.init()."""
+    """Шрифты игры. Пиксельный Press Start 2P лежит в ассетах, поэтому выглядит
+    одинаково на десктопе и в браузере (SysFont в WASM недоступен)."""
 
     def __init__(self):
-        self.ui = pygame.font.SysFont("consolas", 20)
-        self.small = pygame.font.SysFont("consolas", 15)
-        self.title = pygame.font.SysFont("consolas", 48, bold=True)
+        path = str(FONT_PATH)
+        self.title = pygame.font.Font(path, 40)
+        self.menu = pygame.font.Font(path, 18)
+        self.ui = pygame.font.Font(path, 14)
+        self.small = pygame.font.Font(path, 10)
