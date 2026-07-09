@@ -90,7 +90,7 @@ def process_enemy_turns(session):
             damage = opponent_attacks_player(opponent, person)
             if damage > 0:
                 session.stats["hits_taken"] += 1
-            name = opponent.type.name.title()
+            name = opponent_display_name(opponent.type)
             if damage == -1:
                 session.set_message(f"The {name} missed you.")
             elif damage == 0:

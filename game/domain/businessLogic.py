@@ -308,7 +308,7 @@ def drop_item_near_player(session, item):
 
 def _attack_message(op, damage, gold_gained=0):
     """Формирует текстовое сообщение об исходе атаки игрока."""
-    name = op.type.name.title()
+    name = opponent_display_name(op.type)
     if damage == -1:
         if op.type == OpponentType.VAMPIRE and not op.vampire_first_strike:
             return f"Your first strike against the {name} was deflected!"

@@ -62,3 +62,19 @@ SYM_VAMPIRE = 'v'
 SYM_GHOST = 'g'
 SYM_OGRE = 'O'
 SYM_SNAKE = 's'
+
+PLAYER_NAME = "Juggernaut"
+
+# Отображаемые имена врагов (Dota-inspired); ключи — OpponentType.name.
+OPPONENT_DISPLAY_NAMES = {
+    "ZOMBIE": "Dire Ghoul",
+    "VAMPIRE": "Lifestealer",
+    "GHOST": "Spectre",
+    "OGRE": "Ogre Magi",
+    "SNAKE": "Medusa",
+}
+
+
+def opponent_display_name(opponent_type):
+    """Имя врага для сообщений и UI."""
+    return OPPONENT_DISPLAY_NAMES.get(opponent_type.name, opponent_type.name.title())
