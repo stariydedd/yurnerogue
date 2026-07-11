@@ -14,7 +14,7 @@ ROLE_DEFAULTS = {
     "pudge": "zombie_idle_anim",
     "bloodseeker": "ice_zombie_idle_anim",
     "ghost": "necromancer_idle_anim",
-    "ogre": "ogre_idle_anim",
+    "axe": "ogre_idle_anim",
     "skywrath": "lizard_f_idle_anim",
     "food": "flask_red",
     "elixir": "flask_blue",

@@ -45,7 +45,7 @@ OPPONENT_SPRITES = {
     OpponentType.ZOMBIE: "pudge",
     OpponentType.VAMPIRE: "bloodseeker",
     OpponentType.GHOST: "ghost",
-    OpponentType.OGRE: "ogre",
+    OpponentType.OGRE: "axe",
     OpponentType.SNAKE: "skywrath",
 }
 

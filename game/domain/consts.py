@@ -70,7 +70,7 @@ OPPONENT_DISPLAY_NAMES = {
     "ZOMBIE": "Pudge",
     "VAMPIRE": "Bloodseeker",
     "GHOST": "Skeleton Ghost",
-    "OGRE": "Ogre Magi",
+    "OGRE": "Axe",
     "SNAKE": "Skywrath Mage",
 }
 
