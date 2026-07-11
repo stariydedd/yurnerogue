@@ -281,17 +281,17 @@ function show_infobox() {
             overflow: hidden;
         }
 
-        /* Растягиваем игровой канвас на всё окно с сохранением пропорций.
+        /* Растягиваем игровой канвас на всё окно без чёрных полос.
            !important перебивает инлайн-стили, которые pygbag выставляет через
-           window_resize(); object-fit: contain даёт letterbox вместо искажения;
-           pixelated держит пиксель-арт чётким. */
+           window_resize(); object-fit: fill заполняет весь экран (лёгкое
+           растяжение на не-16:10 мониторах); pixelated держит пиксель-арт чётким. */
         #canvas {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            object-fit: contain !important;
+            object-fit: fill !important;
             image-rendering: pixelated !important;
             background-color: #0a0a0a !important;
         }
