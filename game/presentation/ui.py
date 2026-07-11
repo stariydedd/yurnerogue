@@ -267,14 +267,14 @@ def draw_status_panel(screen, fonts, sprites, session):
     weapon_name = f"{player.weapon.name} [+{player.weapon.strength_effect}]" if player.weapon else "Bare hands"
     stats = (
         f"STR {player.strength}   AGI {player.agility}   "
-        f"DEPTH {session.level_num}   GOLD {player.treasures}   {weapon_name}"
+        f"LVL {session.level_num}   GOLD {player.treasures}   WPN {weapon_name}"
     )
     _blit(screen, fonts.ui, stats, (text_x, GRID_H + 58), WHITE)
 
     if session.message:
         msg_surf = fonts.ui.render(session.message, True, MSG_COLOR)
         screen.blit(msg_surf, msg_surf.get_rect(topright=(SCREEN_W - 12, GRID_H + 10)))
-    binds = "[WASD] Move  [H] Weapon  [J] Salve  [K] Bottle  [E] Tome  [Q] Menu"
+    binds = "[WASD] Move  [H] Weapon  [J] Food  [K] Elixir  [E] Scroll  [Q] Menu"
     binds_surf = fonts.small.render(binds, True, HINT_COLOR)
     screen.blit(binds_surf, binds_surf.get_rect(bottomright=(SCREEN_W - 12, SCREEN_H - 8)))
 
