@@ -1,5 +1,4 @@
 import asyncio
-import sys
 
 import pygame
 from presentation import ui
@@ -8,31 +7,12 @@ from presentation.fonts import Fonts
 from presentation.sprites import SpriteStore
 from presentation.view import MAIN_MENU_OPTIONS, QUIT_OPTIONS, Game
 
-IS_WEB = sys.platform == "emscripten"
-
-
-def _fit_canvas_to_browser():
-    """Вписывает канвас в окно браузера с сохранением пропорций.
-
-    pygbag рисует канвас фиксированного размера; масштабируем его CSS-стилями,
-    image-rendering: pixelated сохраняет чёткость пиксель-арта.
-    """
-    import platform as web
-
-    try:
-        win_w = int(web.window.innerWidth)
-        win_h = int(web.window.innerHeight)
-        scale = min(win_w / SCREEN_W, win_h / SCREEN_H)
-        canvas = web.window.canvas
-        canvas.style.width = f"{int(SCREEN_W * scale)}px"
-        canvas.style.height = f"{int(SCREEN_H * scale)}px"
-        canvas.style.imageRendering = "pixelated"
-    except Exception:
-        pass
-
 
 async def main():
-    """Точка входа. Асинхронный цикл — требование pygbag для WASM-сборки."""
+    """Точка входа. Асинхронный цикл — требование pygbag для WASM-сборки.
+
+    Растягивание канваса на весь экран сделано в web/rogue.tmpl через CSS
+    (правило #canvas с !important перебивает инлайн-стили pygbag)."""
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
     pygame.display.set_caption(WINDOW_TITLE)
@@ -41,12 +21,7 @@ async def main():
     sprites = SpriteStore(SPRITE_SCALE)
     game = Game()
 
-    frame = 0
     while not game.should_quit:
-        if IS_WEB and frame % FPS == 0:  # раз в секунду, подхватывает ресайз окна
-            _fit_canvas_to_browser()
-        frame += 1
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game.should_quit = True
