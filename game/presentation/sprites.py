@@ -12,7 +12,7 @@ CUSTOM_DIR = ASSETS_DIR / "custom"
 ROLE_DEFAULTS = {
     "player": "knight_m_idle_anim",
     "zombie": "zombie_idle_anim",
-    "lifestealer": "ice_zombie_idle_anim",
+    "bloodseeker": "ice_zombie_idle_anim",
     "spectre": "necromancer_idle_anim",
     "ogre": "ogre_idle_anim",
     "medusa": "lizard_f_idle_anim",

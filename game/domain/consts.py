@@ -68,7 +68,7 @@ PLAYER_NAME = "Juggernaut"
 # Отображаемые имена врагов (Dota-inspired); ключи — OpponentType.name.
 OPPONENT_DISPLAY_NAMES = {
     "ZOMBIE": "Dire Ghoul",
-    "VAMPIRE": "Lifestealer",
+    "VAMPIRE": "Bloodseeker",
     "GHOST": "Spectre",
     "OGRE": "Ogre Magi",
     "SNAKE": "Medusa",

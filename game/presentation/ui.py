@@ -43,7 +43,7 @@ FLOOR_SYMBOLS = (SYM_ROOM_FLOOR, SYM_CORRIDOR, SYM_DOOR, SYM_EXIT, SYM_ITEM, SYM
 # переопределить любую своим PNG в assets/custom/<role>.png.
 OPPONENT_SPRITES = {
     OpponentType.ZOMBIE: "zombie",
-    OpponentType.VAMPIRE: "lifestealer",
+    OpponentType.VAMPIRE: "bloodseeker",
     OpponentType.GHOST: "spectre",
     OpponentType.OGRE: "ogre",
     OpponentType.SNAKE: "medusa",

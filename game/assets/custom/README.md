@@ -24,7 +24,7 @@
 |---------------|-------------------|
 | `player.png`  | Игрок (Juggernaut) |
 | `zombie.png`  | Dire Ghoul        |
-| `lifestealer.png` | Lifestealer   |
+| `bloodseeker.png` | Bloodseeker (враг-вампир) |
 | `spectre.png` | Spectre           |
 | `ogre.png`    | Ogre Magi         |
 | `medusa.png`  | Medusa            |
