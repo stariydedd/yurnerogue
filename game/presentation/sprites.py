@@ -72,6 +72,7 @@ class SpriteStore:
                 self.frames[name] = frames
 
         self.custom = self._load_custom()
+        self._flipped = {}  # кэш зеркальных кадров: ключ -> [Surface, ...]
 
     def _load_custom(self):
         """Загружает переопределения из assets/custom/*.png (если папка есть)."""
@@ -98,14 +99,24 @@ class SpriteStore:
         frames = self.frames[name]
         return frames[tick % len(frames)]
 
-    def sprite(self, role, tick=0):
+    def sprite(self, role, tick=0, flip=False):
         """Возвращает кадр роли: сперва пользовательский PNG, иначе спрайт из атласа.
 
-        Неизвестная роль трактуется как прямое имя атласа (напр. 'floor_3')."""
+        Неизвестная роль трактуется как прямое имя атласа (напр. 'floor_3').
+        flip=True — кадр, отражённый по горизонтали (персонаж смотрит влево);
+        зеркальные кадры считаются один раз и кэшируются."""
         if role in self.custom:
-            frames = self.custom[role]
-            return frames[tick % len(frames)]
-        return self.frame(ROLE_DEFAULTS.get(role, role), tick)
+            key, frames = ("custom", role), self.custom[role]
+        else:
+            name = ROLE_DEFAULTS.get(role, role)
+            key, frames = ("atlas", name), self.frames[name]
+        if flip:
+            mirrored = self._flipped.get(key)
+            if mirrored is None:
+                mirrored = [pygame.transform.flip(f, True, False) for f in frames]
+                self._flipped[key] = mirrored
+            frames = mirrored
+        return frames[tick % len(frames)]
 
     def has_custom(self, role):
         """True, если для роли есть пользовательский спрайт в assets/custom/."""

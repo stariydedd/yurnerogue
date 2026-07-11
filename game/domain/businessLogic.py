@@ -321,6 +321,8 @@ def _attack_message(op, damage, gold_gained=0):
 def move_person_x(session, direction):
     """Шаг игрока по горизонтали; если в клетке враг — атакует его."""
     person = session.get_player()
+    # Разворот происходит даже если шаг упёрся в стену или врага.
+    person.facing = 1 if direction > 0 else -1
     new_x = person.crd.x + direction
     new_y = person.crd.y
 

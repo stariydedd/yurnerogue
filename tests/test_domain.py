@@ -118,3 +118,35 @@ def test_update_level_advances_and_moves_player():
     session.update_level()
     assert session.level_num == 2
     assert session.get_player().crd != Coord(-1, -1)
+
+
+def test_player_facing_follows_horizontal_moves():
+    from domain.businessLogic import move_person_x
+
+    session = Session()
+    person = session.get_player()
+    assert person.facing == 1
+    move_person_x(session, -1)
+    assert person.facing == -1  # разворот даже при шаге в стену
+    move_person_x(session, 1)
+    assert person.facing == 1
+
+
+def test_opponent_faces_player_when_attacking():
+    from domain.combat import process_enemy_turns
+
+    session = Session()
+    person = session.get_player()
+    room = next(
+        r for r in session.get_rooms()
+        if r is not None
+        and r.crd.x <= person.crd.x < r.crd.x + r.width
+        and r.crd.y <= person.crd.y < r.crd.y + r.height
+    )
+    room.enemies.clear()
+    op = Opponent(opponent_type=OpponentType.ZOMBIE, health=100, agility=0, strength=0)
+    op.crd = Coord(person.crd.x - 1, person.crd.y)  # вплотную слева от игрока
+    op.facing = -1
+    room.enemies.append(op)
+    process_enemy_turns(session)
+    assert op.facing == 1  # повернулся к игроку (тот справа)

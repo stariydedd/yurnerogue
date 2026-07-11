@@ -355,6 +355,7 @@ class Person:
         self.treasures = DEFAULT_TREASURES
         self.special_state = {}
         self.active_effects = []
+        self.facing = 1  # 1 — смотрит вправо, -1 — влево (последний горизонтальный шаг)
 
     def is_alive(self):
         """Проверяет, жив ли персонаж"""
@@ -517,6 +518,7 @@ class Opponent:
         self.last_direction = None
         self.ogre_cooldown = False
         self.vampire_first_strike = True
+        self.facing = 1  # 1 — смотрит вправо, -1 — влево (последний горизонтальный шаг)
 
     def generate_from_level(self, level_num):
         """
@@ -748,6 +750,8 @@ class Opponent:
         if step:
             self.crd.x += step[0]
             self.crd.y += step[1]
+            if step[0]:
+                self.facing = 1 if step[0] > 0 else -1
 
 class ItemType(Enum):
     """Основные категории предметов."""

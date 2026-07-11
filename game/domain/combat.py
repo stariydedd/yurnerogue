@@ -85,6 +85,8 @@ def process_enemy_turns(session):
 
     for opponent in living:
         if _in_contact(opponent, person):
+            if person.crd.x != opponent.crd.x:
+                opponent.facing = 1 if person.crd.x > opponent.crd.x else -1
             if opponent.type == OpponentType.GHOST:
                 opponent.is_chasing = True
             damage = opponent_attacks_player(opponent, person)

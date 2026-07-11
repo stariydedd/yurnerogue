@@ -17,7 +17,7 @@ from domain.domain import ItemType, Session
 
 MAX_NAME_LENGTH = 16
 
-MAIN_MENU_OPTIONS = [("New Game", "new"), ("Scoreboard", "scoreboard")]
+MAIN_MENU_OPTIONS = [("New Game", "new"), ("Leaderboard", "scoreboard")]
 QUIT_OPTIONS = [("Return to Menu", "menu"), ("Cancel", "cancel")]
 
 _ITEM_TYPE_NAMES = {ItemType.FOOD: "food", ItemType.ELIXIR: "elixirs", ItemType.SCROLL: "scrolls"}

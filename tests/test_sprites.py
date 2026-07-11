@@ -49,6 +49,17 @@ def test_custom_png_overrides_role(tmp_path, monkeypatch):
     assert frame.get_at((0, 0))[:3] == (255, 0, 0)
 
 
+def test_flip_mirrors_frame_horizontally():
+    store = SpriteStore(SPRITE_SCALE)
+    normal = store.sprite("wall")
+    flipped = store.sprite("wall", flip=True)
+    w = normal.get_width()
+    for x, y in [(0, 5), (3, 10), (w - 1, 20)]:
+        assert flipped.get_at((x, y)) == normal.get_at((w - 1 - x, y))
+    # повторный вызов отдаёт кадр из кэша, а не создаёт новый
+    assert store.sprite("wall", flip=True) is flipped
+
+
 def test_custom_animation_frames_split(tmp_path, monkeypatch):
     # PNG 128x32 с 4 кадрами -> роль отдаёт 4 разных кадра
     custom_dir = tmp_path / "custom"

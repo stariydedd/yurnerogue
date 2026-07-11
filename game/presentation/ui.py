@@ -114,9 +114,9 @@ def _blit_tile(screen, sprites, role, x, y, cam_x, cam_y, tick=0):
     screen.blit(sprites.sprite(role, tick), (x * TILE_SIZE - cam_x, y * TILE_SIZE - cam_y))
 
 
-def _blit_entity(screen, sprites, role, x, y, cam_x, cam_y, tick=0):
+def _blit_entity(screen, sprites, role, x, y, cam_x, cam_y, tick=0, flip=False):
     """Рисует персонажа с якорем по низу клетки: высокие спрайты возвышаются над тайлом."""
-    frame = sprites.sprite(role, tick)
+    frame = sprites.sprite(role, tick, flip)
     rect = frame.get_rect()
     rect.midbottom = (x * TILE_SIZE + TILE_SIZE // 2 - cam_x, (y + 1) * TILE_SIZE - cam_y)
     screen.blit(frame, rect)
@@ -175,9 +175,11 @@ def draw_map(screen, fonts, sprites, session):
         if (opponent.crd.x, opponent.crd.y) not in fully_visible:
             continue
         role = OPPONENT_SPRITES.get(opponent.type, "pudge")
-        _blit_entity(screen, sprites, role, opponent.crd.x, opponent.crd.y, cam_x, cam_y, tick)
+        _blit_entity(screen, sprites, role, opponent.crd.x, opponent.crd.y, cam_x, cam_y, tick,
+                     flip=opponent.facing < 0)
 
-    _blit_entity(screen, sprites, PLAYER_SPRITE, player.crd.x, player.crd.y, cam_x, cam_y, tick)
+    _blit_entity(screen, sprites, PLAYER_SPRITE, player.crd.x, player.crd.y, cam_x, cam_y, tick,
+                 flip=player.facing < 0)
 
 
 def _draw_hp_bar(screen, sprites, x, y, width, player):
