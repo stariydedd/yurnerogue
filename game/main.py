@@ -42,6 +42,8 @@ async def main():
             ui.draw_quit_dialog(screen, fonts, QUIT_OPTIONS, game.quit_selected)
         elif game.state == "LEADERBOARD":
             ui.draw_leaderboard_screen(screen, fonts, sprites, game.leaderboard_records, game.leaderboard_source)
+        elif game.state == "HELP":
+            ui.draw_help(screen, fonts, sprites)
         elif game.state == "DEATH":
             ui.draw_end_screen(screen, fonts, sprites, "YOU DIED", game.submit_status)
         elif game.state == "WIN":

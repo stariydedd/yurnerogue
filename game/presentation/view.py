@@ -19,7 +19,7 @@ from domain.domain import ItemType, Session
 
 MAX_NAME_LENGTH = 16
 
-MAIN_MENU_OPTIONS = [("New Game", "new"), ("Leaderboard", "scoreboard")]
+MAIN_MENU_OPTIONS = [("New Game", "new"), ("Leaderboard", "scoreboard"), ("Help", "help")]
 QUIT_OPTIONS = [("Return to Menu", "menu"), ("Cancel", "cancel")]
 
 _ITEM_TYPE_NAMES = {ItemType.FOOD: "food", ItemType.ELIXIR: "elixirs", ItemType.SCROLL: "scrolls"}
@@ -44,6 +44,7 @@ class Game:
         self.item_menu_allow_zero = False
         self.leaderboard_records = []
         self.leaderboard_source = ""
+        self.help_return_state = "MAIN_MENU"
         self.player_name = ""
         self.name_input = ""
         self.submit_status = ""
@@ -105,6 +106,8 @@ class Game:
             self._handle_quit_dialog(key)
         elif self.state == "LEADERBOARD":
             self.state = "MAIN_MENU"
+        elif self.state == "HELP":
+            self.state = self.help_return_state
         elif self.state in ("DEATH", "WIN"):
             if key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                 self._return_to_menu()
@@ -130,6 +133,9 @@ class Game:
                 self.state = "NAME_ENTRY"
             elif choice == "scoreboard":
                 self.open_leaderboard()
+            elif choice == "help":
+                self.help_return_state = "MAIN_MENU"
+                self.state = "HELP"
 
     def _handle_name_entry(self, event):
         if event.key == pygame.K_ESCAPE:
@@ -152,6 +158,10 @@ class Game:
         if key == pygame.K_q:
             self.quit_selected = 0
             self.state = "QUIT_DIALOG"
+            return
+        elif key == pygame.K_F1:
+            self.help_return_state = "PLAYING"
+            self.state = "HELP"
             return
         elif key in (pygame.K_w, pygame.K_UP):
             acted = sleeping or move_person_y(session, -1)

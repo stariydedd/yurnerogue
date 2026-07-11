@@ -98,9 +98,26 @@ def test_quit_dialog_confirm_returns_to_menu(playing_game):
     assert playing_game.session is None
 
 
-def test_main_menu_has_only_new_and_scoreboard():
+def test_main_menu_options():
     from presentation.view import MAIN_MENU_OPTIONS
-    assert [opt[1] for opt in MAIN_MENU_OPTIONS] == ["new", "scoreboard"]
+    assert [opt[1] for opt in MAIN_MENU_OPTIONS] == ["new", "scoreboard", "help"]
+
+
+def test_help_from_menu_returns_to_menu():
+    game = Game()
+    game.handle_event(key(pygame.K_DOWN))
+    game.handle_event(key(pygame.K_DOWN))  # выбор Help
+    game.handle_event(key(pygame.K_RETURN))
+    assert game.state == "HELP"
+    game.handle_event(key(pygame.K_SPACE))
+    assert game.state == "MAIN_MENU"
+
+
+def test_help_from_game_returns_to_game(playing_game):
+    playing_game.handle_event(key(pygame.K_F1))
+    assert playing_game.state == "HELP"
+    playing_game.handle_event(key(pygame.K_SPACE))
+    assert playing_game.state == "PLAYING"
 
 
 def test_death_screen_returns_to_menu(playing_game):

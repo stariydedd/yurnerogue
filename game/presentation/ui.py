@@ -239,44 +239,50 @@ def draw_map(screen, fonts, sprites, session):
                  flip=player.facing < 0)
 
 
-def _draw_hp_bar(screen, sprites, x, y, width, player):
-    """Полоса здоровья с сердечком слева."""
-    heart = sprites.sprite("ui_heart_full")
-    screen.blit(heart, (x, y - 4))
-    bar_x = x + heart.get_width() + 6
-    ratio = player.health / player.max_health if player.max_health else 0
-    pygame.draw.rect(screen, (60, 20, 20), (bar_x, y, width, 14))
-    pygame.draw.rect(screen, (200, 50, 50), (bar_x, y, int(width * ratio), 14))
-    pygame.draw.rect(screen, (20, 5, 5), (bar_x, y, width, 14), 2)
-
-
 def draw_status_panel(screen, fonts, sprites, session):
-    """Нижняя панель: портрет, HP-бар, характеристики, сообщение, подсказки."""
+    """Нижняя панель: портрет, HP-бар, характеристики, сообщение, подсказки.
+
+    Вёрстка тремя фиксированными рядами (имя / HP / статы) с общим левым краем;
+    портрет живёт в слоте постоянной ширины, чтобы размеры кадров анимации
+    не сдвигали остальные элементы."""
     player = session.get_player()
     pygame.draw.rect(screen, PANEL_BG, (0, GRID_H, SCREEN_W, PANEL_H))
 
+    slot_w = 56
     portrait = sprites.sprite(PLAYER_SPRITE, _anim_tick())
-    screen.blit(portrait, (12, GRID_H + PANEL_H // 2 - portrait.get_height() // 2))
+    screen.blit(portrait, portrait.get_rect(center=(12 + slot_w // 2, GRID_H + PANEL_H // 2)))
 
-    text_x = 12 + portrait.get_width() + 14
+    text_x = 12 + slot_w + 14
     _blit(screen, fonts.ui, PLAYER_NAME, (text_x, GRID_H + 8), GOLD)
-    _draw_hp_bar(screen, sprites, text_x, GRID_H + 36, 180, player)
-    hp_label = f"{player.health}/{player.max_health}"
-    _blit(screen, fonts.small, hp_label, (text_x + 44, GRID_H + 35), WHITE)
+
+    # Ряд HP: сердечко и цифры выровнены по вертикальному центру бара.
+    bar_y = GRID_H + 34
+    bar_h = 16
+    heart = pygame.transform.scale(sprites.sprite("ui_heart_full"), (18, 18))
+    screen.blit(heart, (text_x, bar_y - 1))
+    bar_x = text_x + 26
+    bar_w = 200
+    ratio = player.health / player.max_health if player.max_health else 0
+    ratio = max(0.0, min(1.0, ratio))
+    pygame.draw.rect(screen, (60, 20, 20), (bar_x, bar_y, bar_w, bar_h))
+    pygame.draw.rect(screen, (205, 52, 48), (bar_x, bar_y, int(bar_w * ratio), bar_h))
+    pygame.draw.rect(screen, (18, 6, 6), (bar_x, bar_y, bar_w, bar_h), 2)
+    _blit(screen, fonts.small, f"{player.health}/{player.max_health}",
+          (bar_x + bar_w + 10, bar_y + (bar_h - 10) // 2), WHITE)
 
     weapon_name = f"{player.weapon.name} [+{player.weapon.strength_effect}]" if player.weapon else "Bare hands"
     stats = (
         f"STR {player.strength}   AGI {player.agility}   "
         f"LVL {session.level_num}   GOLD {player.treasures}   WPN {weapon_name}"
     )
-    _blit(screen, fonts.ui, stats, (text_x, GRID_H + 58), WHITE)
+    _blit(screen, fonts.ui, stats, (text_x, GRID_H + 62), WHITE)
 
     if session.message:
         msg_surf = fonts.ui.render(session.message, True, MSG_COLOR)
         screen.blit(msg_surf, msg_surf.get_rect(topright=(SCREEN_W - 12, GRID_H + 10)))
-    binds = "[WASD] Move  [H] Weapon  [J] Food  [K] Elixir  [E] Scroll  [Q] Menu"
+    binds = "[WASD] Move  [H] Weapon  [J] Food  [K] Elixir  [E] Scroll  [F1] Help  [Q] Menu"
     binds_surf = fonts.small.render(binds, True, HINT_COLOR)
-    screen.blit(binds_surf, binds_surf.get_rect(bottomright=(SCREEN_W - 12, SCREEN_H - 8)))
+    screen.blit(binds_surf, binds_surf.get_rect(bottomright=(SCREEN_W - 12, SCREEN_H - 4)))
 
 
 def draw_playing(screen, fonts, sprites, session):
@@ -400,6 +406,56 @@ def draw_name_entry(screen, fonts, sprites, name_input):
     _blit(screen, fonts.menu, name_input + "_", (box_x + 14, box_y + 14), WHITE)
     _center_text(screen, fonts.small, "Enter: start   Esc: back   (empty = anonymous)",
                  box_y + box_h + 26, HINT_COLOR)
+
+
+HELP_ENEMIES = [
+    ("pudge", "Pudge", "Tough and slow. Wanders randomly."),
+    ("bloodseeker", "Bloodseeker", "Steals your max HP. Deflects your first strike."),
+    ("ghost", "Skeleton Ghost", "Teleports around the room, mostly invisible."),
+    ("axe", "Axe", "Moves 2 tiles. Rests, counters, never misses."),
+    ("skywrath", "Skywrath Mage", "Moves diagonally. Hits may put you to sleep."),
+]
+
+HELP_ITEMS = [
+    ("food", "Food", "Restores health."),
+    ("elixir", "Elixir", "Temporary stat buff for 20 turns."),
+    ("scroll", "Scroll", "Permanent stat buff."),
+    ("sword", "Weapon", "Equip with [H]; the old one drops nearby."),
+    ("coin", "Treasure", "Dropped by slain enemies. Leaderboard score."),
+    ("ladder", "Exit", "Descend deeper. Clear level 21 to win."),
+]
+
+
+def _help_row(screen, fonts, sprites, role, name, desc, x, y, slot=52):
+    """Строка легенды: спрайт в слоте slot x slot, справа имя и описание."""
+    frame = sprites.sprite(role)
+    if frame.get_width() > slot or frame.get_height() > slot:
+        ratio = min(slot / frame.get_width(), slot / frame.get_height())
+        frame = pygame.transform.scale_by(frame, ratio)
+    rect = frame.get_rect(center=(x + slot // 2, y + slot // 2))
+    screen.blit(frame, rect)
+    _blit(screen, fonts.ui, name, (x + slot + 14, y + 6), WHITE)
+    _blit(screen, fonts.small, desc, (x + slot + 14, y + 30), HINT_COLOR)
+
+
+def draw_help(screen, fonts, sprites):
+    """Экран справки: легенда врагов, предметов и выхода."""
+    _menu_backdrop(screen, sprites)
+    _title_with_shadow(screen, fonts, "HELP", 24)
+
+    left_x, right_x = 90, 700
+    top_y = 120
+    _blit(screen, fonts.ui, "ENEMIES", (left_x, top_y), GOLD)
+    for i, (role, name, desc) in enumerate(HELP_ENEMIES):
+        _help_row(screen, fonts, sprites, role, name, desc, left_x, top_y + 36 + i * 66)
+
+    _blit(screen, fonts.ui, "ITEMS", (right_x, top_y), GOLD)
+    for i, (role, name, desc) in enumerate(HELP_ITEMS):
+        _help_row(screen, fonts, sprites, role, name, desc, right_x, top_y + 36 + i * 66)
+
+    binds = "[WASD] Move   [H] Weapon   [J] Food   [K] Elixir   [E] Scroll   [F1] Help   [Q] Menu"
+    _center_text(screen, fonts.small, binds, SCREEN_H - 64, WHITE)
+    _center_text(screen, fonts.small, "Press any key to return...", SCREEN_H - 32, HINT_COLOR)
 
 
 def draw_end_screen(screen, fonts, sprites, message, submit_status=""):
