@@ -11,7 +11,7 @@ CUSTOM_DIR = ASSETS_DIR / "custom"
 # Свой PNG в assets/custom/<role>.png переопределяет роль, не трогая остальное.
 ROLE_DEFAULTS = {
     "player": "knight_m_idle_anim",
-    "zombie": "zombie_idle_anim",
+    "pudge": "zombie_idle_anim",
     "bloodseeker": "ice_zombie_idle_anim",
     "ghost": "necromancer_idle_anim",
     "ogre": "ogre_idle_anim",

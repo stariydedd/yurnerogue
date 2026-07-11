@@ -23,7 +23,7 @@
 | Файл          | Кто это           |
 |---------------|-------------------|
 | `player.png`  | Игрок (Juggernaut) |
-| `zombie.png`  | Dire Ghoul        |
+| `pudge.png`   | Pudge (враг-танк)  |
 | `bloodseeker.png` | Bloodseeker (враг-вампир) |
 | `ghost.png`   | Skeleton Ghost (враг-призрак) |
 | `ogre.png`    | Ogre Magi         |

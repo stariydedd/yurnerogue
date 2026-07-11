@@ -42,7 +42,7 @@ FLOOR_SYMBOLS = (SYM_ROOM_FLOOR, SYM_CORRIDOR, SYM_DOOR, SYM_EXIT, SYM_ITEM, SYM
 # Значения — семантические роли (см. ROLE_DEFAULTS в sprites.py): игрок может
 # переопределить любую своим PNG в assets/custom/<role>.png.
 OPPONENT_SPRITES = {
-    OpponentType.ZOMBIE: "zombie",
+    OpponentType.ZOMBIE: "pudge",
     OpponentType.VAMPIRE: "bloodseeker",
     OpponentType.GHOST: "ghost",
     OpponentType.OGRE: "ogre",
@@ -174,7 +174,7 @@ def draw_map(screen, fonts, sprites, session):
     for opponent in visible_opponents:
         if (opponent.crd.x, opponent.crd.y) not in fully_visible:
             continue
-        role = OPPONENT_SPRITES.get(opponent.type, "zombie")
+        role = OPPONENT_SPRITES.get(opponent.type, "pudge")
         _blit_entity(screen, sprites, role, opponent.crd.x, opponent.crd.y, cam_x, cam_y, tick)
 
     _blit_entity(screen, sprites, PLAYER_SPRITE, player.crd.x, player.crd.y, cam_x, cam_y, tick)
