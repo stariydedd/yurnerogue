@@ -46,7 +46,7 @@ OPPONENT_SPRITES = {
     OpponentType.VAMPIRE: "bloodseeker",
     OpponentType.GHOST: "ghost",
     OpponentType.OGRE: "ogre",
-    OpponentType.SNAKE: "medusa",
+    OpponentType.SNAKE: "skywrath",
 }
 
 ITEM_SPRITES = {

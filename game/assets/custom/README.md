@@ -27,7 +27,7 @@
 | `bloodseeker.png` | Bloodseeker (враг-вампир) |
 | `ghost.png`   | Skeleton Ghost (враг-призрак) |
 | `ogre.png`    | Ogre Magi         |
-| `medusa.png`  | Medusa            |
+| `skywrath.png` | Skywrath Mage (враг-усыпитель) |
 | `food.png`    | Еда (Salve)       |
 | `elixir.png`  | Эликсир (Bottle)  |
 | `scroll.png`  | Свиток (Tome)     |
