@@ -1,4 +1,6 @@
 import asyncio
+import random
+import time
 
 import pygame
 from datalayer.dataSource import load_leaderboard, save_run
@@ -50,7 +52,13 @@ class Game:
     # --- переходы между состояниями ---
 
     def start_new_game(self):
-        """Начинает новую игровую сессию."""
+        """Начинает новую игровую сессию.
+
+        Генератор случайных чисел сеется реальными часами: в браузере (WASM)
+        интерпретатор стартует в одинаковом состоянии на каждой загрузке
+        страницы, и без этого первый уровень всегда получал один и тот же сид.
+        """
+        random.seed(time.time_ns() ^ pygame.time.get_ticks())
         self.session = Session()
         self.state = "PLAYING"
 

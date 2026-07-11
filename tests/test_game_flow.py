@@ -32,6 +32,22 @@ def test_new_game_flow_reaches_playing(playing_game):
     assert playing_game.session is not None
 
 
+def test_new_game_seed_differs_despite_fixed_rng_state():
+    # В WASM интерпретатор стартует с одинаковым состоянием RNG на каждой
+    # загрузке страницы; start_new_game обязан пересеять генератор часами,
+    # иначе первый уровень всегда один и тот же.
+    import random
+
+    seeds = []
+    for _ in range(2):
+        random.seed(42)  # имитация одинакового состояния после загрузки страницы
+        game = Game()
+        game.handle_event(key(pygame.K_RETURN))
+        game.handle_event(key(pygame.K_RETURN))
+        seeds.append(game.session.level.seed)
+    assert seeds[0] != seeds[1]
+
+
 def test_name_entry_typing_and_backspace():
     game = Game()
     game.handle_event(key(pygame.K_RETURN))
