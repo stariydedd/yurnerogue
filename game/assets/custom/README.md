@@ -25,7 +25,7 @@
 | `player.png`  | Игрок (Juggernaut) |
 | `zombie.png`  | Dire Ghoul        |
 | `bloodseeker.png` | Bloodseeker (враг-вампир) |
-| `spectre.png` | Spectre           |
+| `ghost.png`   | Skeleton Ghost (враг-призрак) |
 | `ogre.png`    | Ogre Magi         |
 | `medusa.png`  | Medusa            |
 | `food.png`    | Еда (Salve)       |

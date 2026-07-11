@@ -44,7 +44,7 @@ FLOOR_SYMBOLS = (SYM_ROOM_FLOOR, SYM_CORRIDOR, SYM_DOOR, SYM_EXIT, SYM_ITEM, SYM
 OPPONENT_SPRITES = {
     OpponentType.ZOMBIE: "zombie",
     OpponentType.VAMPIRE: "bloodseeker",
-    OpponentType.GHOST: "spectre",
+    OpponentType.GHOST: "ghost",
     OpponentType.OGRE: "ogre",
     OpponentType.SNAKE: "medusa",
 }
