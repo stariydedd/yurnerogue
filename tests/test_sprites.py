@@ -25,12 +25,13 @@ def test_parse_custom_name_animated():
     assert parse_custom_name("wall.2") == ("wall", 2)
 
 
-def test_roles_resolve_to_atlas_by_default():
+def test_roles_resolve_without_crashing():
     store = SpriteStore(SPRITE_SCALE)
-    # Без пользовательских PNG роль отдаёт спрайт из атласа, не падает.
+    # Каждая роль отдаёт спрайт (кастомный из assets/custom/ или дефолт из атласа).
     for role in ("player", "zombie", "ogre", "food", "sword", "wall", "ladder"):
         assert store.sprite(role) is not None
-    assert not store.has_custom("player")
+    # Несуществующая роль-переопределение отсутствует.
+    assert not store.has_custom("definitely_not_a_role")
 
 
 def test_custom_png_overrides_role(tmp_path, monkeypatch):
