@@ -39,23 +39,25 @@ from presentation.config import (
 # отдельными символами, но визуально это те же клетки пола.
 FLOOR_SYMBOLS = (SYM_ROOM_FLOOR, SYM_CORRIDOR, SYM_DOOR, SYM_EXIT, SYM_ITEM, SYM_PLAYER)
 
+# Значения — семантические роли (см. ROLE_DEFAULTS в sprites.py): игрок может
+# переопределить любую своим PNG в assets/custom/<role>.png.
 OPPONENT_SPRITES = {
-    OpponentType.ZOMBIE: "zombie_idle_anim",
-    OpponentType.VAMPIRE: "ice_zombie_idle_anim",
-    OpponentType.GHOST: "necromancer_idle_anim",
-    OpponentType.OGRE: "ogre_idle_anim",
-    OpponentType.SNAKE: "lizard_f_idle_anim",
+    OpponentType.ZOMBIE: "zombie",
+    OpponentType.VAMPIRE: "lifestealer",
+    OpponentType.GHOST: "spectre",
+    OpponentType.OGRE: "ogre",
+    OpponentType.SNAKE: "medusa",
 }
 
 ITEM_SPRITES = {
-    ItemType.FOOD: "flask_red",
-    ItemType.ELIXIR: "flask_blue",
-    ItemType.SCROLL: "flask_yellow",
-    ItemType.WEAPON: "weapon_regular_sword",
-    ItemType.TREASURE: "coin_anim",
+    ItemType.FOOD: "food",
+    ItemType.ELIXIR: "elixir",
+    ItemType.SCROLL: "scroll",
+    ItemType.WEAPON: "sword",
+    ItemType.TREASURE: "coin",
 }
 
-PLAYER_SPRITE = "knight_m_idle_anim"
+PLAYER_SPRITE = "player"
 
 # Затемнение исследованных, но невидимых сейчас клеток.
 EXPLORED_DIM_ALPHA = 175
@@ -107,14 +109,14 @@ def _floor_variant(x, y):
     return f"floor_{(x * 7 + y * 13) % 8 + 1}"
 
 
-def _blit_tile(screen, sprites, name, x, y, cam_x, cam_y, tick=0):
+def _blit_tile(screen, sprites, role, x, y, cam_x, cam_y, tick=0):
     """Рисует спрайт клетки (x, y) с учётом камеры, якорь — верхний левый угол тайла."""
-    screen.blit(sprites.frame(name, tick), (x * TILE_SIZE - cam_x, y * TILE_SIZE - cam_y))
+    screen.blit(sprites.sprite(role, tick), (x * TILE_SIZE - cam_x, y * TILE_SIZE - cam_y))
 
 
-def _blit_entity(screen, sprites, name, x, y, cam_x, cam_y, tick=0):
+def _blit_entity(screen, sprites, role, x, y, cam_x, cam_y, tick=0):
     """Рисует персонажа с якорем по низу клетки: высокие спрайты возвышаются над тайлом."""
-    frame = sprites.frame(name, tick)
+    frame = sprites.sprite(role, tick)
     rect = frame.get_rect()
     rect.midbottom = (x * TILE_SIZE + TILE_SIZE // 2 - cam_x, (y + 1) * TILE_SIZE - cam_y)
     screen.blit(frame, rect)
@@ -149,12 +151,13 @@ def draw_map(screen, fonts, sprites, session):
             if not visible and not explored:
                 continue
             if cell in FLOOR_SYMBOLS:
-                self_name = _floor_variant(x, y)
-                _blit_tile(screen, sprites, self_name, x, y, cam_x, cam_y)
+                # Свой пол (роль "floor") кроет всю карту; иначе — вариации атласа.
+                floor_role = "floor" if sprites.has_custom("floor") else _floor_variant(x, y)
+                _blit_tile(screen, sprites, floor_role, x, y, cam_x, cam_y)
                 if cell == SYM_EXIT:
-                    _blit_tile(screen, sprites, "floor_ladder", x, y, cam_x, cam_y)
+                    _blit_tile(screen, sprites, "ladder", x, y, cam_x, cam_y)
             elif cell == SYM_WALL:
-                _blit_tile(screen, sprites, "wall_mid", x, y, cam_x, cam_y)
+                _blit_tile(screen, sprites, "wall", x, y, cam_x, cam_y)
             else:
                 continue
             if not visible:
@@ -165,21 +168,21 @@ def draw_map(screen, fonts, sprites, session):
             continue
         for item in room.items:
             if (item.crd.x, item.crd.y) in fully_visible:
-                name = ITEM_SPRITES.get(item.type, "flask_green")
-                _blit_tile(screen, sprites, name, item.crd.x, item.crd.y, cam_x, cam_y, tick)
+                role = ITEM_SPRITES.get(item.type, "food")
+                _blit_tile(screen, sprites, role, item.crd.x, item.crd.y, cam_x, cam_y, tick)
 
     for opponent in visible_opponents:
         if (opponent.crd.x, opponent.crd.y) not in fully_visible:
             continue
-        name = OPPONENT_SPRITES.get(opponent.type, "zombie_idle_anim")
-        _blit_entity(screen, sprites, name, opponent.crd.x, opponent.crd.y, cam_x, cam_y, tick)
+        role = OPPONENT_SPRITES.get(opponent.type, "zombie")
+        _blit_entity(screen, sprites, role, opponent.crd.x, opponent.crd.y, cam_x, cam_y, tick)
 
     _blit_entity(screen, sprites, PLAYER_SPRITE, player.crd.x, player.crd.y, cam_x, cam_y, tick)
 
 
 def _draw_hp_bar(screen, sprites, x, y, width, player):
     """Полоса здоровья с сердечком слева."""
-    heart = sprites.frame("ui_heart_full")
+    heart = sprites.sprite("ui_heart_full")
     screen.blit(heart, (x, y - 4))
     bar_x = x + heart.get_width() + 6
     ratio = player.health / player.max_health if player.max_health else 0
@@ -193,7 +196,7 @@ def draw_status_panel(screen, fonts, sprites, session):
     player = session.get_player()
     pygame.draw.rect(screen, PANEL_BG, (0, GRID_H, SCREEN_W, PANEL_H))
 
-    portrait = sprites.frame(PLAYER_SPRITE, _anim_tick())
+    portrait = sprites.sprite(PLAYER_SPRITE, _anim_tick())
     screen.blit(portrait, (12, GRID_H + PANEL_H // 2 - portrait.get_height() // 2))
 
     text_x = 12 + portrait.get_width() + 14
@@ -265,7 +268,8 @@ def _menu_backdrop(screen, sprites):
     rows = SCREEN_H // TILE_SIZE + 1
     for y in range(rows):
         for x in range(cols):
-            screen.blit(sprites.frame(_floor_variant(x, y)), (x * TILE_SIZE, y * TILE_SIZE))
+            floor_role = "floor" if sprites.has_custom("floor") else _floor_variant(x, y)
+            screen.blit(sprites.sprite(floor_role), (x * TILE_SIZE, y * TILE_SIZE))
     overlay = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
     overlay.fill((0, 0, 0, 190))
     screen.blit(overlay, (0, 0))
@@ -284,11 +288,11 @@ def draw_main_menu(screen, fonts, sprites, options, selected, message=""):
     _menu_backdrop(screen, sprites)
     _title_with_shadow(screen, fonts, "NEW ROGUE", 130)
 
-    hero = pygame.transform.scale_by(sprites.frame(PLAYER_SPRITE, _anim_tick()), 3)
+    hero = pygame.transform.scale_by(sprites.sprite(PLAYER_SPRITE, _anim_tick()), 3)
     screen.blit(hero, hero.get_rect(centerx=SCREEN_W // 2, y=210))
 
     menu_y = 360
-    marker = pygame.transform.scale_by(sprites.frame("weapon_regular_sword"), 1)
+    marker = pygame.transform.scale_by(sprites.sprite("sword"), 1)
     marker = pygame.transform.rotate(marker, -90)
     for i, (label, _) in enumerate(options):
         color = HILITE if i == selected else WHITE
@@ -335,7 +339,7 @@ def draw_name_entry(screen, fonts, sprites, name_input):
     """Экран ввода имени игрока перед новой игрой."""
     _menu_backdrop(screen, sprites)
     _title_with_shadow(screen, fonts, "YOUR NAME", 170)
-    hero = pygame.transform.scale_by(sprites.frame(PLAYER_SPRITE, _anim_tick()), 3)
+    hero = pygame.transform.scale_by(sprites.sprite(PLAYER_SPRITE, _anim_tick()), 3)
     screen.blit(hero, hero.get_rect(centerx=SCREEN_W // 2, y=260))
     box_w, box_h = 460, 48
     box_x = (SCREEN_W - box_w) // 2
