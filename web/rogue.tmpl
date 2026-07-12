@@ -190,41 +190,58 @@ function show_infobox() {
     <link rel="icon" type="image/png" href="favicon.png" sizes="16x16">
 
     <style>
+        @font-face {
+            font-family: 'PressStart2P';
+            src: url('PressStart2P.ttf') format('truetype');
+        }
+
         #status {
             display: inline-block;
             vertical-align: top;
-            margin-top: 20px;
-            font-family: monospace;
-            font-weight: bold;
-            letter-spacing: 2px;
+            margin-top: 24px;
+            font-family: 'PressStart2P', monospace;
+            font-size: 14px;
             color: #d4af37;
         }
 
         #progress {
-            height: 14px;
+            height: 16px;
             width: 320px;
-            accent-color: #d4af37;
+            margin-top: 14px;
+            appearance: none;
+            -webkit-appearance: none;
+            border: 2px solid #3c2800;
+            background: #1a1a1a;
         }
+        #progress::-webkit-progress-bar { background: #1a1a1a; }
+        #progress::-webkit-progress-value { background: #d4af37; }
+        #progress::-moz-progress-bar { background: #d4af37; }
 
+        /* Всегда по центру экрана, без участия JS. */
         #transfer {
-            margin-top: 38vh;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999998;
         }
+        #transfer[hidden] { display: none !important; }
 
         .loader-title {
-            font-family: monospace;
-            font-size: 44px;
-            font-weight: bold;
-            letter-spacing: 6px;
+            font-family: 'PressStart2P', monospace;
+            font-size: 36px;
             color: #d4af37;
-            text-shadow: 3px 3px 0 #3c2800;
-            margin-bottom: 18px;
+            text-shadow: 4px 4px 0 #3c2800;
+            margin-bottom: 10px;
         }
 
         .loader-dots span {
             display: inline-block;
             width: 12px;
             height: 12px;
-            margin: 14px 5px 0;
+            margin: 18px 5px 0;
             background: #d4af37;
             animation: hop 1s infinite;
         }
@@ -236,14 +253,18 @@ function show_infobox() {
         }
 
         #infobox {
-            position: fixed; /* center relative to viewport */
+            /* Центр экрана всегда; !important перебивает инлайн-координаты,
+               которые выставляет show_infobox() из шаблонного JS. */
+            position: fixed !important;
+            left: 50% !important;
+            top: calc(50% + 130px) !important;
+            transform: translate(-50%, -50%) !important;
             background: #1a1a1a;
             border: 2px solid #d4af37;
             color: #d4af37;
-            font-family: monospace;
-            font-weight: bold;
-            letter-spacing: 2px;
-            padding: 14px 28px;
+            font-family: 'PressStart2P', monospace;
+            font-size: 14px;
+            padding: 16px 28px;
             z-index: 999999;
         }
         div.emscripten { text-align: center; }
