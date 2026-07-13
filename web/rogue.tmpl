@@ -159,7 +159,48 @@ config = {
     fb_ar   :  1.6,
     fb_width : "{{cookiecutter.width}}",
     fb_height : "{{cookiecutter.height}}"
-}
+};
+
+// Любая JS-ошибка страницы показывается плашкой на экране (диагностика без F12).
+;(function () {
+    function show(msg) {
+        var box = document.getElementById("jserror");
+        if (!box) return;
+        box.style.display = "block";
+        box.textContent += msg + "\n";
+    }
+    window.addEventListener("error", function (e) {
+        show("JS ERROR: " + e.message + " @ " + (e.filename || "?") + ":" + (e.lineno || "?"));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+        show("PROMISE REJECTION: " + (e.reason && e.reason.message || e.reason));
+    });
+})();
+
+// Лоадер скрывается на время загрузки пиксельного шрифта (максимум 1.5 c),
+// чтобы не было вспышки системным шрифтом. Проверка — после DOMContentLoaded:
+// раньше <style> с @font-face ещё не распарсен и fonts.load резолвится впустую.
+;(function () {
+    var html = document.documentElement;
+    html.classList.add("fonts-loading");
+    var reveal = function () { html.classList.remove("fonts-loading"); };
+    setTimeout(reveal, 2000);  // страховка: показать в любом случае
+    var check = function () {
+        if (document.fonts && document.fonts.load) {
+            Promise.race([
+                document.fonts.load("16px PressStart2P"),
+                new Promise(function (r) { setTimeout(r, 1500); })
+            ]).then(reveal, reveal);
+        } else {
+            setTimeout(reveal, 100);
+        }
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", check);
+    } else {
+        check();
+    }
+})();
 
 function show_infobox() {
     infobox.style.display = "block";
@@ -198,14 +239,9 @@ function show_infobox() {
             font-display: block;
         }
 
-        #status {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 24px;
-            font-family: 'PressStart2P', monospace;
-            font-size: 14px;
-            color: #d4af37;
-        }
+        /* Текстовый статус в transfer скрыт: единственная плашка загрузки —
+           #infobox, в неё же рантайм пишет статусы установки пакетов. */
+        #status { display: none; }
 
         #progress {
             height: 16px;
@@ -220,17 +256,32 @@ function show_infobox() {
         #progress::-webkit-progress-value { background: #d4af37; }
         #progress::-moz-progress-bar { background: #d4af37; }
 
-        /* Всегда по центру экрана, без участия JS. */
-        #transfer {
+        /* Пока грузится пиксельный шрифт, скрипт вешает класс fonts-loading и
+           лоадер скрыт — нет вспышки системным шрифтом. Полярность fail-open:
+           если скрипт не выполнился, класса нет и лоадер остаётся видимым. */
+        html.fonts-loading #transfer, html.fonts-loading #infobox { visibility: hidden; }
+
+        /* Плашка для JS-ошибок: диагностика прямо на экране. */
+        #jserror {
             position: fixed;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 999998;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            max-width: 90vw;
+            background: #300;
+            border: 2px solid #f55;
+            color: #faa;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 10px 16px;
+            white-space: pre-wrap;
+            z-index: 2000000;
+            display: none;
         }
-        #transfer[hidden] { display: none !important; }
+
+        /* Блок с заголовком и прогрессбаром скрыт: до открытия меню игрок
+           видит только плашку #infobox «Loading ...». */
+        #transfer { display: none !important; }
 
         .loader-title {
             font-family: 'PressStart2P', monospace;
@@ -240,27 +291,12 @@ function show_infobox() {
             margin-bottom: 10px;
         }
 
-        .loader-dots span {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            margin: 18px 5px 0;
-            background: #d4af37;
-            animation: hop 1s infinite;
-        }
-        .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
-        .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes hop {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-            30% { transform: translateY(-10px); opacity: 1; }
-        }
-
         #infobox {
             /* Центр экрана всегда; !important перебивает инлайн-координаты,
                которые выставляет show_infobox() из шаблонного JS. */
             position: fixed !important;
             left: 50% !important;
-            top: calc(50% + 130px) !important;
+            top: 50% !important;
             transform: translate(-50%, -50%) !important;
             background: #1a1a1a;
             border: 2px solid #d4af37;
@@ -373,7 +409,6 @@ function show_infobox() {
         <div class="emscripten">
             <progress value="0" max="100" id="progress"></progress>
         </div>
-        <div class="loader-dots"><span></span><span></span><span></span></div>
     </div>
 
 
@@ -391,6 +426,8 @@ height="{{cookiecutter.height}}px"
     </canvas>
 
     <div id="infobox">Loading ...</div>
+
+    <div id="jserror"></div>
 
     <div id=html></div>
 
