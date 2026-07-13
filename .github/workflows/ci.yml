@@ -121,7 +121,7 @@ jobs:
       - name: Health check
         run: |
           for i in $(seq 1 12); do
-            if curl -fsS "http://${{ secrets.DEPLOY_HOST }}/api/health" > /dev/null; then
+            if curl -fsS "https://yurnerogue.ru/api/health" > /dev/null; then
               echo "Health check passed"
               exit 0
             fi

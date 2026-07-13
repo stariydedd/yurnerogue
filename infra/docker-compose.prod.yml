@@ -3,11 +3,13 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       # Монтируем директорию, а не один файл: rsync меняет inode файла при
       # обновлении, и bind-mount одиночного файла не отражает это в контейнере.
       - ./nginx/:/etc/nginx/conf.d/:ro
       - /var/www/rogue:/usr/share/nginx/html:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
     restart: unless-stopped
