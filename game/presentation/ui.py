@@ -343,7 +343,8 @@ def _title_with_shadow(screen, fonts, text, y):
 def draw_main_menu(screen, fonts, sprites, options, selected, message=""):
     """Главное меню: фон из тайлов, герой и выбор опций с маркером-мечом."""
     _menu_backdrop(screen, sprites)
-    _title_with_shadow(screen, fonts, "NEW ROGUE", 130)
+    _title_with_shadow(screen, fonts, "YurneROGUE", 118)
+    _center_text(screen, fonts.small, "Every strike may be the last.", 178, HINT_COLOR)
 
     hero = pygame.transform.scale_by(sprites.sprite(PLAYER_SPRITE, _anim_tick()), 3)
     screen.blit(hero, hero.get_rect(centerx=SCREEN_W // 2, y=210))

@@ -18,7 +18,7 @@ PANEL_H = 96
 SCREEN_W = GRID_W
 SCREEN_H = GRID_H + PANEL_H
 FPS = 30
-WINDOW_TITLE = "new_rogue"
+WINDOW_TITLE = "YurneROGUE"
 
 # Скорость смены кадров idle-анимаций, мс на кадр.
 ANIM_FRAME_MS = 160

@@ -55,8 +55,9 @@ jobs:
       - run: pip install pygbag
       - name: Build web bundle
         run: |
-          python -m pygbag --build --ume_block 0 --template web/rogue.tmpl game
+          python -m pygbag --build --ume_block 0 --template web/rogue.tmpl --title "YurneROGUE" game
           cp game/assets/fonts/PressStart2P.ttf game/build/web/
+          cp web/favicon.png game/build/web/favicon.png
       - uses: actions/upload-artifact@v4
         with:
           name: web-build
@@ -82,8 +83,8 @@ jobs:
           context: backend
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/new_rogue-backend:latest
-            ghcr.io/${{ github.repository_owner }}/new_rogue-backend:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/yurnerogue-backend:latest
+            ghcr.io/${{ github.repository_owner }}/yurnerogue-backend:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest

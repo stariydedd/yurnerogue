@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ghcr.io/stariydedd/new_rogue-backend:latest
+    image: ghcr.io/stariydedd/yurnerogue-backend:latest
     env_file: .env
     depends_on:
       db:
