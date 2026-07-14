@@ -13,7 +13,7 @@ ROLE_DEFAULTS = {
     "player": "knight_m_idle_anim",
     "pudge": "zombie_idle_anim",
     "bloodseeker": "ice_zombie_idle_anim",
-    "ghost": "necromancer_idle_anim",
+    "riki": "necromancer_idle_anim",
     "axe": "ogre_idle_anim",
     "skywrath": "lizard_f_idle_anim",
     "food": "flask_red",

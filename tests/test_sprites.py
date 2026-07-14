@@ -28,7 +28,7 @@ def test_parse_custom_name_animated():
 def test_roles_resolve_without_crashing():
     store = SpriteStore(SPRITE_SCALE)
     # Каждая роль отдаёт спрайт (кастомный из assets/custom/ или дефолт из атласа).
-    for role in ("player", "pudge", "bloodseeker", "ghost", "axe", "skywrath", "food", "sword", "wall", "ladder"):
+    for role in ("player", "pudge", "bloodseeker", "riki", "axe", "skywrath", "food", "sword", "wall", "ladder"):
         assert store.sprite(role) is not None
     # Несуществующая роль-переопределение отсутствует.
     assert not store.has_custom("definitely_not_a_role")

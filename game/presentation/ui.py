@@ -45,7 +45,7 @@ FLOOR_SYMBOLS = (SYM_ROOM_FLOOR, SYM_CORRIDOR, SYM_DOOR, SYM_EXIT, SYM_ITEM, SYM
 OPPONENT_SPRITES = {
     OpponentType.ZOMBIE: "pudge",
     OpponentType.VAMPIRE: "bloodseeker",
-    OpponentType.GHOST: "ghost",
+    OpponentType.GHOST: "riki",
     OpponentType.OGRE: "axe",
     OpponentType.SNAKE: "skywrath",
 }
@@ -407,7 +407,7 @@ def draw_name_entry(screen, fonts, sprites, name_input):
 HELP_ENEMIES = [
     ("pudge", "Pudge", "Tough and slow. Wanders randomly."),
     ("bloodseeker", "Bloodseeker", "Steals your max HP. Deflects your first strike."),
-    ("ghost", "Skeleton Ghost", "Teleports around the room, mostly invisible."),
+    ("riki", "Riki", "Blinks around the room, mostly invisible."),
     ("axe", "Axe", "Moves 2 tiles. Rests, counters, never misses."),
     ("skywrath", "Skywrath Mage", "Moves diagonally. Hits may put you to sleep."),
 ]

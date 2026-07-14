@@ -69,7 +69,7 @@ PLAYER_NAME = "Juggernaut"
 OPPONENT_DISPLAY_NAMES = {
     "ZOMBIE": "Pudge",
     "VAMPIRE": "Bloodseeker",
-    "GHOST": "Skeleton Ghost",
+    "GHOST": "Riki",
     "OGRE": "Axe",
     "SNAKE": "Skywrath Mage",
 }
