@@ -114,6 +114,37 @@ def test_run_moves_until_wall(playing_game):
     assert exit_ahead or not can_move_to(nx, ny, session)
 
 
+def test_corridor_turn_follows_single_continuation(playing_game):
+    # На клетке коридора с единственным продолжением (не назад) бег поворачивает.
+    import pytest as _pytest
+
+    session = playing_game.session
+    for room in session.get_rooms():
+        if room is not None:
+            room.enemies.clear()
+    person = session.get_player()
+    g = playing_game
+    # ищем клетку тропы и направление входа, при котором прямо нельзя,
+    # а продолжение ровно одно
+    from domain.businessLogic import build_grid_map, can_move_to
+    grid = build_grid_map(session.get_rooms(), session.get_passages(), person, session.get_exit())
+    for y in range(len(grid)):
+        for x in range(len(grid[0])):
+            if not g._is_corridor_cell(x, y):
+                continue
+            for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+                person.crd.x, person.crd.y = x, y
+                if can_move_to(x + dx, y + dy, session):
+                    continue  # прямо можно — поворот не нужен
+                turn = g._corridor_turn(dx, dy)
+                if turn is not None:
+                    assert turn != (-dx, -dy)  # не разворот
+                    tx, ty = x + turn[0], y + turn[1]
+                    assert g._is_corridor_cell(tx, ty)
+                    return
+    _pytest.skip("на этой карте не нашлось подходящего поворота")
+
+
 def test_run_cancelled_by_non_direction_key(playing_game):
     person = playing_game.session.get_player()
     start = (person.crd.x, person.crd.y)

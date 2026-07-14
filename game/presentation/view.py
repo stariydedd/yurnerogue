@@ -219,9 +219,11 @@ class Game:
     def _run_direction(self, dx, dy):
         """Бег (find из оригинального Rogue): серия ходов в направлении до упора.
 
-        Каждый шаг — полноценный ход (враги ходят). Остановка: стена или
-        поворот, враг на пути, лестница впереди (на бегу не спускаемся),
-        полученный урон, подобранный предмет, сон или конец игры."""
+        Каждый шаг — полноценный ход (враги ходят). В коридоре бег следует
+        поворотам: если прямо нельзя, но есть ровно одно продолжение (не назад),
+        направление меняется. Остановка: стена в комнате, развилка коридора,
+        враг на пути, лестница впереди (на бегу не спускаемся), полученный
+        урон, подобранный предмет, сон или конец игры."""
         session = self.session
         person = session.get_player()
         opponents = session.get_opponents()
@@ -236,6 +238,10 @@ class Game:
                 session.set_message("You stop at the ladder.")
                 break
             if not can_move_to(nx, ny, session):
+                turn = self._corridor_turn(dx, dy)
+                if turn:
+                    dx, dy = turn
+                    continue
                 break
             hp_before = person.health
             items_before = len(person.backpack.items)
@@ -245,6 +251,37 @@ class Game:
             self._resolve_turn(False)
             if person.health < hp_before or len(person.backpack.items) != items_before:
                 break
+
+    def _is_corridor_cell(self, x, y):
+        """Клетка тропы: внутри сегмента коридора и не на полу комнаты (двери — да)."""
+        session = self.session
+        for px, py, pw, ph in session.get_passages():
+            if px + 1 <= x < px + pw - 1 and py + 1 <= y < py + ph - 1:
+                for room in session.get_rooms():
+                    if room is not None and (
+                        room.crd.x <= x < room.crd.x + room.width
+                        and room.crd.y <= y < room.crd.y + room.height
+                    ):
+                        return False
+                return True
+        return False
+
+    def _corridor_turn(self, dx, dy):
+        """Возвращает новое направление на повороте коридора или None.
+
+        Поворот выполняется, только если игрок стоит на тропе и ровно одно
+        направление (кроме обратного) продолжает её — развилки останавливают бег."""
+        person = self.session.get_player()
+        if not self._is_corridor_cell(person.crd.x, person.crd.y):
+            return None
+        options = []
+        for ndx, ndy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+            if (ndx, ndy) == (-dx, -dy):
+                continue
+            tx, ty = person.crd.x + ndx, person.crd.y + ndy
+            if self._is_corridor_cell(tx, ty) and can_move_to(tx, ty, self.session):
+                options.append((ndx, ndy))
+        return options[0] if len(options) == 1 else None
 
     def _check_game_over(self):
         session = self.session
