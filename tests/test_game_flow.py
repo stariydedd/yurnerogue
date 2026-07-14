@@ -145,6 +145,31 @@ def test_corridor_turn_follows_single_continuation(playing_game):
     _pytest.skip("на этой карте не нашлось подходящего поворота")
 
 
+def test_run_stops_at_room_entrance(playing_game):
+    # Бег по коридору завершается на первой клетке комнаты, а не насквозь.
+    import pytest as _pytest
+    from domain.businessLogic import build_grid_map
+    from domain.consts import SYM_CORRIDOR, SYM_DOOR, SYM_ROOM_FLOOR
+
+    session = playing_game.session
+    for room in session.get_rooms():
+        if room is not None:
+            room.enemies.clear()
+            room.items.clear()
+    person = session.get_player()
+    grid = build_grid_map(session.get_rooms(), session.get_passages(), person, session.get_exit())
+    for y in range(len(grid)):
+        for x in range(2, len(grid[0]) - 1):
+            if (grid[y][x] == SYM_DOOR and grid[y][x + 1] == SYM_ROOM_FLOOR
+                    and grid[y][x - 1] == SYM_CORRIDOR and grid[y][x - 2] == SYM_CORRIDOR):
+                person.crd.x, person.crd.y = x - 2, y
+                playing_game.handle_event(key(pygame.K_f))
+                playing_game.handle_event(key(pygame.K_d))
+                assert (person.crd.x, person.crd.y) == (x + 1, y)
+                return
+    _pytest.skip("на этой карте нет прямого захода в дверь слева")
+
+
 def test_run_cancelled_by_non_direction_key(playing_game):
     person = playing_game.session.get_player()
     start = (person.crd.x, person.crd.y)

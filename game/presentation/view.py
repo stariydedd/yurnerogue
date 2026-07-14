@@ -245,11 +245,15 @@ class Game:
                 break
             hp_before = person.health
             items_before = len(person.backpack.items)
+            was_on_path = self._is_corridor_cell(person.crd.x, person.crd.y)
             moved = move_person_x(session, dx) if dx else move_person_y(session, dy)
             if not moved:
                 break
             self._resolve_turn(False)
             if person.health < hp_before or len(person.backpack.items) != items_before:
+                break
+            # Пришли по тропе к комнате — останавливаемся у входа (как в Rogue).
+            if was_on_path and not self._is_corridor_cell(person.crd.x, person.crd.y):
                 break
 
     def _is_corridor_cell(self, x, y):
