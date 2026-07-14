@@ -222,8 +222,7 @@ function show_infobox() {
     <title>{{cookiecutter.title}}</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="viewport" content="height=device-height, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes"/>
 
@@ -305,6 +304,8 @@ function show_infobox() {
             font-size: 14px;
             padding: 16px 28px;
             z-index: 999999;
+            /* Всегда одна строка: и «Loading ...», и статусы установки пакетов. */
+            white-space: nowrap;
         }
         div.emscripten { text-align: center; }
         div.emscripten_border { border: 1px solid black; }
@@ -339,6 +340,12 @@ function show_infobox() {
         html, body {
             height: 100%;
             overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            /* iOS Safari «умно» увеличивает текст (text autosizing) — из-за
+               этого Loading-плашка распухала и переносилась на две строки. */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         /* Растягиваем игровой канвас на всё окно без чёрных полос.
@@ -354,6 +361,10 @@ function show_infobox() {
             object-fit: fill !important;
             image-rendering: pixelated !important;
             background-color: #0a0a0a !important;
+            /* Тач-жесты (скролл, зум, double-tap) не должны перехватывать игру. */
+            touch-action: none !important;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .topright{

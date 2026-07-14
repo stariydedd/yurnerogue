@@ -14,4 +14,5 @@ class Fonts:
         self.title = pygame.font.Font(path, 40)
         self.menu = pygame.font.Font(path, 18)
         self.ui = pygame.font.Font(path, 14)
+        self.compact = pygame.font.Font(path, 12)  # длинные строки на узком экране
         self.small = pygame.font.Font(path, 10)

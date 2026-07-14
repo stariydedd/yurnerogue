@@ -84,6 +84,24 @@ def test_item_menu_without_items_shows_message(playing_game):
     assert "No food" in playing_game.session.message
 
 
+def test_item_menu_arrow_selection_uses_item(playing_game):
+    # Выбор стрелками + Enter (путь тач-управления): вторая строка списка.
+    from domain.domain import ItemType, Subject
+
+    person = playing_game.session.get_player()
+    for name in ("Bread", "Meat"):
+        person.backpack.add_item(Subject(subject_type=ItemType.FOOD, health_effect=1, name=name))
+    hp_before = person.health
+    person.health = max(1, hp_before - 5)
+    playing_game.handle_event(key(pygame.K_j))
+    assert playing_game.state == "ITEM_MENU"
+    playing_game.handle_event(key(pygame.K_DOWN))
+    playing_game.handle_event(key(pygame.K_RETURN))
+    assert playing_game.state == "PLAYING"
+    assert "Meat" in playing_game.session.message
+    assert all(it.name != "Meat" for it in person.backpack.items)
+
+
 def test_run_moves_until_wall(playing_game):
     # Без врагов бег вправо должен довести до стены комнаты (или края тропы).
     from domain.businessLogic import can_move_to

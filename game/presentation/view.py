@@ -18,6 +18,8 @@ from domain.combat import process_enemy_turns
 from domain.consts import MAX_LEVELS
 from domain.domain import ItemType, Session
 
+from presentation import webenv
+
 MAX_NAME_LENGTH = 16
 RUN_LIMIT = 200  # предохранитель от бесконечного бега
 
@@ -35,15 +37,17 @@ class Game:
     pygame-события за раз, вызываемую из главного цикла в main.py.
     """
 
-    def __init__(self):
+    def __init__(self, touch_mode=False):
         self.state = "MAIN_MENU"
         self.session = None
+        self.touch_mode = touch_mode
         self.menu_selected = 0
         self.menu_message = ""
         self.quit_selected = 0
         self.item_menu_type = None
         self.item_menu_items = []
         self.item_menu_allow_zero = False
+        self.item_menu_selected = 0
         self.leaderboard_records = []
         self.leaderboard_source = ""
         self.help_return_state = "MAIN_MENU"
@@ -132,6 +136,16 @@ class Game:
         elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
             choice = MAIN_MENU_OPTIONS[self.menu_selected][1]
             if choice == "new":
+                # На тач-устройстве экранная клавиатура над канвасом не
+                # всплывает — имя спрашивает системный prompt() браузера.
+                if self.touch_mode and webenv.is_web():
+                    name = webenv.prompt_text("Name for the leaderboard (empty = anonymous):",
+                                              self.player_name)
+                    if name is None:
+                        return  # отмена — остаёмся в меню
+                    self.player_name = name.strip()[:MAX_NAME_LENGTH]
+                    self.start_new_game()
+                    return
                 self.name_input = self.player_name
                 self.state = "NAME_ENTRY"
             elif choice == "scoreboard":
@@ -319,15 +333,30 @@ class Game:
             self.item_menu_allow_zero = False
         self.item_menu_items = items
         self.item_menu_type = item_type
+        self.item_menu_selected = 0
         self.state = "ITEM_MENU"
         return False
 
     def _handle_item_menu(self, key):
+        """Выбор предмета: цифры либо стрелки/крестовина + Enter.
+
+        Индекс выбранной строки совпадает с choice: при allow_zero строка 0 —
+        «голые руки», дальше предметы; без него строки нумеруются с первого
+        предмета."""
         if key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
             self.state = "PLAYING"
             return
+        rows = len(self.item_menu_items) + (1 if self.item_menu_allow_zero else 0)
         choice = None
-        if self.item_menu_allow_zero and key == pygame.K_0:
+        if key in (pygame.K_UP, pygame.K_w):
+            self.item_menu_selected = (self.item_menu_selected - 1) % rows
+            return
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            self.item_menu_selected = (self.item_menu_selected + 1) % rows
+            return
+        elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+            choice = self.item_menu_selected
+        elif self.item_menu_allow_zero and key == pygame.K_0:
             choice = 0
         elif pygame.K_1 <= key <= pygame.K_9:
             idx = key - pygame.K_0
